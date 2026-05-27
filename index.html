@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>MicroMessage</h2>
+
+<button onclick="connect()">Connect</button>
+<br><br>
+
+<input id="text">
+<button onclick="send()">Send</button>
+
+<script>
+let port;
+let writer;
+
+async function connect() {
+  port = await navigator.serial.requestPort();
+  await port.open({ baudRate: 115200 });
+  writer = port.writable.getWriter();
+  alert("connected");
+}
+
+async function send() {
+  let msg = document.getElementById("text").value;
+  await writer.write(new TextEncoder().encode(msg + "\n"));
+}
+</script>
+</body>
+</html>
