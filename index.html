@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Messagebit</title>
 
         <style>
@@ -79,14 +81,15 @@
         }
 
         </style>
-<body>
+    </head>
+    <body>
 
 <h2>Messagebit</h2>
 
-<button class=connect onclick="connect()">Connect to Micro:bit via USB</button>
+<button class="connect" onclick="connect()">Connect to Micro:bit via USB</button>
 <br><br>
 
-<input type="text" placeholder="Your Message">
+<input id="text" type="text" placeholder="Your Message">
 <button onclick="send()">Send</button>
 
 <script>
@@ -94,15 +97,40 @@ let port;
 let writer;
 
 async function connect() {
-  port = await navigator.serial.requestPort();
-  await port.open({ baudRate: 115200 });
-  writer = port.writable.getWriter();
-  alert("connected");
+  if (!('serial' in navigator)) {
+    alert('Web Serial is not supported in this browser. Use Chrome or Edge.');
+    return;
+  }
+
+  try {
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 115200 });
+    writer = port.writable.getWriter();
+    alert('Connected to Micro:bit');
+  } catch (err) {
+    console.error(err);
+    alert('Connection failed: ' + (err.message || err));
+  }
 }
 
 async function send() {
-  let msg = document.getElementById("text").value;
-  await writer.write(new TextEncoder().encode(msg + "\n"));
+  if (!writer) {
+    alert('Connect to the Micro:bit first.');
+    return;
+  }
+
+  const msg = document.getElementById('text').value.trim();
+  if (!msg) {
+    alert('Please type a message first.');
+    return;
+  }
+
+  try {
+    await writer.write(new TextEncoder().encode(msg + '\n'));
+  } catch (err) {
+    console.error(err);
+    alert('Send failed: ' + (err.message || err));
+  }
 }
 </script>
 </body>
